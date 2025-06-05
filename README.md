@@ -82,13 +82,11 @@ cp .env.example .env
 
 Add your OpenAI API key to `.env`:
 ```
-NEXT_PUBLIC_OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-**⚠️ Security Note**: Using `NEXT_PUBLIC_` exposes the API key to the browser. For production, implement a backend API route to handle OpenAI requests securely.
-
 ### Development
-
+**Development doesn't include AI Chats, Deploy it for working**
 Run the development server:
 ```bash
 npm run dev
@@ -118,50 +116,10 @@ npm run start
 2. Import your project to [Vercel](https://vercel.com/new)
 
 3. Set environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_OPENAI_API_KEY`: Your OpenAI API key
+   - `OPENAI_API_KEY`: Your OpenAI API key
 
 4. Deploy automatically on every push to main branch
 
-### Deploy on Google Cloud (Vertex AI)
-
-1. Install Google Cloud CLI and authenticate:
-```bash
-gcloud auth login
-gcloud config set project YOUR_PROJECT_ID
-```
-
-2. Build and containerize:
-```bash
-# Build the Next.js app
-npm run build
-
-# Create Dockerfile (if not exists)
-cat > Dockerfile << EOF
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY .next ./.next
-COPY public ./public
-COPY next.config.js ./
-EXPOSE 3000
-CMD ["npm", "start"]
-EOF
-
-# Build and push to Google Container Registry
-docker build -t gcr.io/YOUR_PROJECT_ID/ai-chat-react .
-docker push gcr.io/YOUR_PROJECT_ID/ai-chat-react
-```
-
-3. Deploy to Cloud Run:
-```bash
-gcloud run deploy ai-chat-react \
-  --image gcr.io/YOUR_PROJECT_ID/ai-chat-react \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars NEXT_PUBLIC_OPENAI_API_KEY=your_api_key
-```
 
 ## Project Structure
 
@@ -192,7 +150,7 @@ gcloud run deploy ai-chat-react \
 
 ### Environment Variables
 
-- `NEXT_PUBLIC_OPENAI_API_KEY`: OpenAI API key for AI chat functionality
+- `OPENAI_API_KEY`: OpenAI API key for AI chat functionality
 
 ### Customization
 
@@ -200,13 +158,6 @@ gcloud run deploy ai-chat-react \
 - **AI Models**: Update `lib/openai.ts` to use different GPT models
 - **UI Components**: Extend or modify components in `components/` directory
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and ensure code quality
-5. Submit a pull request
 
 ## Security Considerations
 
@@ -214,11 +165,3 @@ gcloud run deploy ai-chat-react \
 - **Production Recommendation**: Implement backend API routes for secure AI communication
 - **Rate Limiting**: Consider implementing rate limiting for AI requests
 - **Data Privacy**: Ensure compliance with data protection regulations
-
-## License
-
-[Add your license information here]
-
-## Support
-
-For issues and questions, please open an issue on the repository or contact [your-email@example.com].
