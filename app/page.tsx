@@ -38,8 +38,7 @@ export default function Home() {
                 selectedUsername={selectedChat}
             />
             <main className="flex flex-col flex-1 w-full h-screen justify-end items-center">
-                <SidebarTrigger />
-                <div className="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 max-w-3xl flex-1 flex flex-col justify-end pb-4">
+                <div className="w-full h-screen sm:w-3/4 md:w-2/3 lg:w-1/2 max-w-3xl flex-1 flex flex-col justify-end pb-4">
                     {currentChat && (
                         <ChatLayout
                             chat={currentChat}
@@ -48,6 +47,7 @@ export default function Home() {
                         />
                     )}
                 </div>
+
             </main>
         </SidebarProvider>
     );
