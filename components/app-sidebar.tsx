@@ -34,14 +34,15 @@ export function AppSidebar({ chats, onChatClick, selectedUsername }: AppSidebarP
             />
           ))}
         </SidebarGroup>
-        {showNewChat && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-[90%]">
-            <NewChatModal onClose={() => setShowNewChat(false)} />
-          </div>
-        )}
       </SidebarContent>
       <SidebarFooter>
         <div className="relative w-full h-16">
+          {/* Modal appears above the button, anchored to the bottom right */}
+          {showNewChat && (
+            <div className="absolute right-4 bottom-20 z-50 w-[90%] max-w-xs">
+              <NewChatModal onClose={() => setShowNewChat(false)} />
+            </div>
+          )}
           <button
             className="absolute bottom-4 right-4 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:bg-primary/90 transition-colors"
             onClick={() => setShowNewChat((v) => !v)}
