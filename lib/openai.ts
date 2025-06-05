@@ -1,19 +1,35 @@
-import OpenAI from "openai";
 import { useAIChatStore } from "@/store/useAIChatStore";
 
-function getApiKey() {
-  return process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY || "your api key here";
-}
-const openai = new OpenAI({apiKey: getApiKey()});
+export async function createResponse(input: string, chatname: string, model = "gpt-4o-mini") {
+  try {
+    // Get the last response ID from store
+    const lastId = useAIChatStore.getState().getLastResponseId(chatname);
 
-export async function createResponse(input: string, chatname: string, model = "gpt-4o-mini", ) {
-    const lastId = useAIChatStore.getState().getLastResponseId("alice");
-    const response = await openai.responses.create({
-        model: model,
-        input: [{"role": "user", "content" : input}],
-        previous_response_id: lastId,
-        store: true,
+    // Call your API route instead of OpenAI directly
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input,
+        lastId,
+        model,
+      }),
     });
-    useAIChatStore.getState().setLastResponseId("alice", response.id);
-    return response.output_text
+
+    if (!response.ok) {
+      throw new Error('Failed to get AI response');
+    }
+
+    const data = await response.json();
+
+    // Save the new response ID to store
+    if (data.id) {
+      useAIChatStore.getState().setLastResponseId(chatname, data.id);
+    }
+
+    return data.message;
+  } catch (error) {
+    console.error('Error calling AI:', error);
+    throw error;
+  }
 }
