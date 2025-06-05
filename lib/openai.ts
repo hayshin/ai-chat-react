@@ -1,6 +1,7 @@
 import { useAIChatStore } from "@/store/useAIChatStore";
+import { useMutation } from "@tanstack/react-query";
 
-export async function createResponse(input: string, chatname: string, model = "gpt-4o-mini") {
+async function createResponseFn({ input, chatname, model }: { input: string; chatname: string; model?: string }) {
   try {
     // Get the last response ID from store
     const lastId = useAIChatStore.getState().getLastResponseId(chatname);
@@ -12,7 +13,7 @@ export async function createResponse(input: string, chatname: string, model = "g
       body: JSON.stringify({
         input,
         lastId,
-        model,
+        model: model || "gpt-4o-mini",
       }),
     });
 
@@ -32,4 +33,10 @@ export async function createResponse(input: string, chatname: string, model = "g
     console.error('Error calling AI:', error);
     throw error;
   }
+}
+
+export function useCreateResponseMutation() {
+  return useMutation({
+    mutationFn: createResponseFn,
+  });
 }

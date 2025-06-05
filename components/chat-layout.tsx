@@ -5,7 +5,7 @@ import { Chat, ChatMessage } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send, Search, X } from "lucide-react";
-import { createResponse } from "@/lib/openai";
+import { useCreateResponseMutation } from "@/lib/openai";
 import { themeClasses } from "@/lib/theme";
 
 export interface ChatLayoutProps {
@@ -24,6 +24,7 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
   const [searchResults, setSearchResults] = useState<number[]>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const createResponseMutation = useCreateResponseMutation();
 
   // Sync messages when chat changes
   useEffect(() => {
@@ -80,30 +81,33 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
     // If AI chat, get AI response
     if (chat.ai) {
       setLoading(true);
-      try {
-        const aiMessageText = await createResponse(
-          input,
-          chat.username,
-        );
-        const aiMessage: ChatMessage = {
-          username: chat.username,
-          message: aiMessageText,
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        };
-        setMessages((prev) => [...prev, aiMessage]);
-        onSendMessage?.(aiMessageText, chat.username);
-      } catch (e) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            username: chat.username,
-            message: "Failed to get AI response.",
-            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      createResponseMutation.mutate(
+        { input, chatname: chat.username },
+        {
+          onSuccess: (aiMessageText) => {
+            const aiMessage: ChatMessage = {
+              username: chat.username,
+              message: aiMessageText,
+              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            };
+            setMessages((prev) => [...prev, aiMessage]);
+            onSendMessage?.(aiMessageText, chat.username);
+            setLoading(false);
           },
-        ]);
-        console.log(e);
-      }
-      setLoading(false);
+          onError: (e) => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                username: chat.username,
+                message: "Failed to get AI response.",
+                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              },
+            ]);
+            setLoading(false);
+            console.log(e);
+          },
+        }
+      );
     }
   }
 

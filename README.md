@@ -86,7 +86,6 @@ OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ### Development
-**Development doesn't include AI Chats, Deploy it for working**
 Run the development server:
 ```bash
 npm run dev
