@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
+import Image from "next/image";
 import { Message } from "./message";
 import { Chat, ChatMessage } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, Search, X } from "lucide-react";
 import { createResponse } from "@/lib/openai";
 import { themeClasses } from "@/lib/theme";
 
@@ -18,17 +19,49 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(chat.messages);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchResults, setSearchResults] = useState<number[]>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Sync messages when chat changes
   useEffect(() => {
     setMessages(chat.messages);
   }, [chat]);
 
+  // Search functionality
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const results: number[] = [];
+      messages.forEach((msg, idx) => {
+        if (msg.message.toLowerCase().includes(searchQuery.toLowerCase())) {
+          results.push(idx);
+        }
+      });
+      setSearchResults(results);
+      setCurrentSearchIndex(results.length > 0 ? 0 : -1);
+    } else {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+    }
+  }, [searchQuery, messages]);
+
+  // Scroll to current search result
+  useEffect(() => {
+    if (currentSearchIndex >= 0 && searchResults.length > 0) {
+      const messageElement = document.getElementById(`message-${searchResults[currentSearchIndex]}`);
+      messageElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [currentSearchIndex, searchResults]);
+
   // Scroll to bottom on new message
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+    if (!searchQuery) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, loading, searchQuery]);
 
   async function handleSend() {
     if (!input.trim()) return;
@@ -51,7 +84,6 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
         const aiMessageText = await createResponse(
           input,
           chat.username,
-          // chat.aiModel || "gpt-4o-mini"
         );
         const aiMessage: ChatMessage = {
           username: chat.username,
@@ -82,27 +114,107 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
     }
   }
 
+  function handleSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      if (searchResults.length > 0) {
+        const nextIndex = (currentSearchIndex + 1) % searchResults.length;
+        setCurrentSearchIndex(nextIndex);
+      }
+    }
+    if (e.key === "Escape") {
+      setShowSearch(false);
+      setSearchQuery("");
+    }
+  }
+
+  function toggleSearch() {
+    setShowSearch(!showSearch);
+    if (!showSearch) {
+      setTimeout(() => searchInputRef.current?.focus(), 0);
+    } else {
+      setSearchQuery("");
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-2 w-full h-full">
+    <div className="flex flex-col gap-0 w-full h-full">
+      {/* Chat Header */}
+      <div className={themeClasses.chatHeader}>
+        <div className="flex items-center gap-3 flex-1">
+
+          {chat.avatar ? (
+            <Image
+              src={chat.avatar}
+              alt={chat.username}
+              width={40}
+              height={40}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
+              {chat.username.charAt(0).toUpperCase()}
+            </div>
+          )}
+
+          <div className="flex flex-col">
+            <span className="font-semibold text-gray-900">{chat.username}</span>
+            {chat.ai && (
+              <span className="text-xs text-gray-500">AI Chat</span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {showSearch && (
+            <div className="flex items-center gap-2">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Search messages..."
+                className="px-3 py-1 border rounded-md text-sm w-48"
+              />
+              {searchResults.length > 0 && (
+                <span className="text-xs text-gray-500">
+                  {currentSearchIndex + 1} of {searchResults.length}
+                </span>
+              )}
+            </div>
+          )}
+          <button
+            onClick={toggleSearch}
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            aria-label="Search messages"
+          >
+            {showSearch ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Messages Area */}
       <div className="flex-1 min-h-0 flex flex-col p-2 overflow-y-auto">
         <div className="flex flex-col justify-end flex-1 gap-2">
           {messages.map((msg, idx) => {
             const isMainUser = msg.username === mainUser;
+            const isSearchResult = searchResults.includes(idx);
+            const isCurrentSearchResult = currentSearchIndex >= 0 && searchResults[currentSearchIndex] === idx;
+
             return (
               <div
                 key={idx}
-                className={`flex w-full ${isMainUser ? "justify-end" : "justify-start"}`}
+                id={`message-${idx}`}
+                className={`flex w-full ${isMainUser ? "justify-end" : "justify-start"} ${
+                  isCurrentSearchResult ? "ring-2 ring-yellow-400 rounded-lg" :
+                  isSearchResult ? "ring-1 ring-yellow-200 rounded-lg" : ""
+                }`}
               >
-                {/* <div className={`relative min-w-[70%] max-w-[90%] ${
-                  isMainUser ? themeClasses.messageOut : themeClasses.messageIn
-                }`}> */}
-                  <Message
-                    username=""
-                    message={msg.message}
-                    time={msg.time}
-                    theme={isMainUser ? themeClasses.messageOut : themeClasses.messageIn}
-                  />
-                {/* </div> */}
+                <Message
+                  username=""
+                  message={msg.message}
+                  time={msg.time}
+                  theme={isMainUser ? themeClasses.messageOut : themeClasses.messageIn}
+                />
               </div>
             );
           })}
@@ -119,6 +231,8 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
           <div ref={bottomRef} />
         </div>
       </div>
+
+      {/* Input Area */}
       <form
         className={`flex items-end gap-2 pt-2 ${themeClasses.inputArea}`}
         onSubmit={e => {
