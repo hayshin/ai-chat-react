@@ -42,6 +42,7 @@ A modern chat application built with Next.js that supports both human-to-human c
 
 ### State Management
 - **Zustand**: Lightweight state management for chat data and AI response tracking
+- **Tanstack Query**: Powerful server state management and data fetching library, used for handling API requests (such as AI chat responses) and caching results
 
 ### AI Integration
 - **OpenAI SDK**: Official OpenAI JavaScript SDK for GPT integration
