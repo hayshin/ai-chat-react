@@ -10,16 +10,23 @@ import { Chat } from "@/lib/types";
 
 interface AppSidebarProps {
   chats: Chat[];
+  onChatClick?: (chat: Chat) => void;
+  selectedUsername?: string;
 }
 
-export function AppSidebar({ chats }: AppSidebarProps) {
+export function AppSidebar({ chats, onChatClick, selectedUsername }: AppSidebarProps) {
   return (
     <Sidebar>
       <SidebarHeader />
       <SidebarContent>
         <SidebarGroup>
           {chats.map((chat) => (
-            <ChatPanel key={chat.username} {...chat} />
+            <ChatPanel
+              key={chat.username}
+              {...chat}
+              active={selectedUsername === chat.username}
+              onClick={() => onChatClick?.(chat)}
+            />
           ))}
         </SidebarGroup>
       </SidebarContent>

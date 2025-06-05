@@ -3,9 +3,19 @@ import Image from "next/image";
 import { User } from "lucide-react";
 import { Chat } from "@/lib/types";
 
-export function ChatPanel({ username, avatar, lastMessage, time }: Chat) {
+interface ChatPanelProps extends Chat {
+  active?: boolean;
+  onClick?: () => void;
+}
+
+export function ChatPanel({ username, avatar, lastMessage, time, active, onClick }: ChatPanelProps) {
   return (
-    <div className="flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors cursor-pointer">
+    <div
+      className={`flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors cursor-pointer ${
+        active ? "bg-muted" : ""
+      }`}
+      onClick={onClick}
+    >
       {avatar ? (
         <Image
           src={avatar}
