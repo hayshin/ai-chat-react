@@ -21,8 +21,8 @@ export default function Home() {
 
     const currentChat = chats.find((c) => c.username === selectedChat);
 
-    function handleSendMessage(message: string) {
-        sendMessage(selectedChat, message, "me");
+    function handleSendMessage(message: string, sender:string) {
+        sendMessage(selectedChat, message, sender);
     }
 
     return (
@@ -42,7 +42,7 @@ export default function Home() {
                 <div className="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 max-w-3xl flex-1 flex flex-col justify-end pb-4">
                     {currentChat && (
                         <ChatLayout
-                            messages={currentChat.messages}
+                            chat={currentChat}
                             mainUser="me"
                             onSendMessage={handleSendMessage}
                         />

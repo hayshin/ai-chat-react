@@ -1,32 +1,78 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Message } from "./message";
-import { ChatMessage } from "@/lib/types";
+import { Chat, ChatMessage } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
+import { createResponse } from "@/lib/openai";
 
-
-export interface ChatProps {
-  messages: ChatMessage[];
+export interface ChatLayoutProps {
+  chat: Chat;
   mainUser: string;
-  onSendMessage?: (message: string) => void;
+  onSendMessage?: (message: string, sender: string) => void;
 }
 
-export function ChatLayout({ messages, mainUser, onSendMessage }: ChatProps) {
+export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>(chat.messages);
+  const [loading, setLoading] = useState(false);
+
+  // Sync messages when chat changes
+  useEffect(() => {
+    setMessages(chat.messages);
+  }, [chat]);
 
   // Scroll to bottom on new message
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
 
-  function handleSend() {
+  async function handleSend() {
     if (!input.trim()) return;
-    onSendMessage?.(input);
+
+    // Add user message
+    const newUserMessage: ChatMessage = {
+      username: mainUser,
+      message: input,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+    setMessages((prev) => [...prev, newUserMessage]);
+    onSendMessage?.(input, mainUser);
     setInput("");
     textareaRef.current?.focus();
+
+    // If AI chat, get AI response
+    if (chat.ai) {
+      setLoading(true);
+      try {
+        const aiMessageText = await createResponse(
+          input,
+          chat.username,
+          // chat.aiModel || "gpt-4o-mini"
+        );
+        const aiMessage: ChatMessage = {
+          username: chat.username,
+          message: aiMessageText,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+        setMessages((prev) => [...prev, aiMessage]);
+        onSendMessage?.(aiMessageText, chat.username);
+
+      } catch (e) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            username: chat.username,
+            message: "Failed to get AI response.",
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          },
+        ]);
+        console.log(e);
+      }
+      setLoading(false);
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -38,7 +84,7 @@ export function ChatLayout({ messages, mainUser, onSendMessage }: ChatProps) {
 
   return (
     <div className="flex flex-col gap-2 w-full h-full">
-      <div className="flex-1 flex flex-col justify-end overflow-y-auto pb-2">
+      <div className="flex-1 flex flex-col justify-end overflow-y-auto pb-2 max-h-full">
         {messages.map((msg, idx) => {
           const isMainUser = msg.username === mainUser;
           return (
@@ -48,7 +94,7 @@ export function ChatLayout({ messages, mainUser, onSendMessage }: ChatProps) {
             >
               <div
                 className={`relative rounded-2xl`}
-                style={{ maxWidth: "20rem" }}
+                style={{ minWidth: "70%", maxWidth: "90%" }}
               >
                 <Message
                   username=""
@@ -60,6 +106,16 @@ export function ChatLayout({ messages, mainUser, onSendMessage }: ChatProps) {
             </div>
           );
         })}
+        {loading && (
+          <div className="flex justify-start">
+            <div className="relative rounded-2xl bg-muted text-foreground max-w-xs px-4 py-2 mb-2 shadow-sm">
+              <div className="animate-pulse h-4 w-24 bg-muted-foreground/30 rounded" />
+              <span className="absolute right-3 bottom-1 text-xs text-muted-foreground pointer-events-none bg-transparent">
+                ...
+              </span>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
       <form
@@ -77,12 +133,13 @@ export function ChatLayout({ messages, mainUser, onSendMessage }: ChatProps) {
           placeholder="Type a message..."
           className="resize-none min-h-[40px] max-h-32 flex-1"
           rows={1}
+          disabled={loading}
         />
         <Button
           type="submit"
           size="icon"
           className="self-end"
-          disabled={!input.trim()}
+          disabled={!input.trim() || loading}
           tabIndex={0}
         >
           <Send className="w-5 h-5" />
