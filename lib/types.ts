@@ -1,8 +1,7 @@
 export interface Chat {
   username: string;
+  messages: ChatMessage[];
   avatar?: string;
-  lastMessage?: string;
-  time?: string;
 }
 export interface ChatMessage {
   username: string;

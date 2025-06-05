@@ -9,17 +9,12 @@ import { Send } from "lucide-react";
 export interface ChatProps {
   messages: ChatMessage[];
   mainUser: string;
+  onSendMessage?: (message: string) => void;
 }
 
-export function ChatLayout({ messages: initialMessages, mainUser }: ChatProps) {
-  const [messages, setMessages] = useState(initialMessages);
+export function ChatLayout({ messages, mainUser, onSendMessage }: ChatProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Reset messages when initialMessages prop changes (e.g., when switching chats)
-  useEffect(() => {
-    setMessages(initialMessages);
-  }, [initialMessages]);
 
   // Scroll to bottom on new message
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -29,12 +24,7 @@ export function ChatLayout({ messages: initialMessages, mainUser }: ChatProps) {
 
   function handleSend() {
     if (!input.trim()) return;
-    const now = new Date();
-    const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    setMessages([
-      ...messages,
-      { username: mainUser, message: input, time },
-    ]);
+    onSendMessage?.(input);
     setInput("");
     textareaRef.current?.focus();
   }

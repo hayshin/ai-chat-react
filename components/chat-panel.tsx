@@ -8,7 +8,8 @@ interface ChatPanelProps extends Chat {
   onClick?: () => void;
 }
 
-export function ChatPanel({ username, avatar, lastMessage, time, active, onClick }: ChatPanelProps) {
+export function ChatPanel({ username, avatar, messages, active, onClick }: ChatPanelProps) {
+  const lastMessage = messages.at(-1) || { message: "", time: "" };
   return (
     <div
       className={`flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors cursor-pointer ${
@@ -32,10 +33,10 @@ export function ChatPanel({ username, avatar, lastMessage, time, active, onClick
       <div className="flex flex-col flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium text-foreground">{username}</span>
-          <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">{time}</span>
+          <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">{lastMessage.time}</span>
         </div>
         <span className="text-sm text-muted-foreground truncate block max-w-full">
-          {lastMessage}
+          {lastMessage.message}
         </span>
       </div>
     </div>
