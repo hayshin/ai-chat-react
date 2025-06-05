@@ -173,7 +173,7 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
                 placeholder="Search messages..."
-                className="px-3 py-1 border rounded-md text-sm w-48"
+                className="px-3 py-1 border rounded-md text-sm min-w-[30px] max-w-[200px] w-full"
               />
               {searchResults.length > 0 && (
                 <span className="text-xs text-gray-500">
