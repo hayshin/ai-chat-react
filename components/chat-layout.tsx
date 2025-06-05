@@ -85,36 +85,38 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
   return (
     <div className="flex flex-col gap-2 w-full h-full">
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 flex flex-col gap-2 p-2 overflow-y-auto">
-          {messages.map((msg, idx) => {
-            const isMainUser = msg.username === mainUser;
-            return (
-              <div
-                key={idx}
-                className={`flex ${isMainUser ? "justify-end" : "justify-start"}`}
-              >
-                <div className={`relative rounded-2xl max-w-[100%]`}>
-                  <Message
-                    username=""
-                    message={msg.message}
-                    time={msg.time}
-                    bgColor={isMainUser ? "bg-purple-300" : "bg-muted text-foreground"}
-                  />
+        <div className="flex-1 min-h-0 flex flex-col p-2 overflow-y-auto">
+          <div className="flex flex-col justify-end flex-1 gap-2">
+            {messages.map((msg, idx) => {
+              const isMainUser = msg.username === mainUser;
+              return (
+                <div
+                  key={idx}
+                  className={`flex w-full ${isMainUser ? "justify-end" : "justify-start"}`}
+                >
+                  <div className="relative rounded-2xl min-w-[70%] max-w-[90%]">
+                    <Message
+                      username=""
+                      message={msg.message}
+                      time={msg.time}
+                      bgColor={isMainUser ? "bg-purple-300" : "bg-muted text-foreground"}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="relative rounded-2xl bg-muted text-foreground max-w-xs px-4 py-2 mb-2 shadow-sm">
+                  <div className="animate-pulse h-4 w-24 bg-muted-foreground/30 rounded" />
+                  <span className="absolute right-3 bottom-1 text-xs text-muted-foreground pointer-events-none bg-transparent">
+                    ...
+                  </span>
                 </div>
               </div>
-            );
-          })}
-          {loading && (
-            <div className="flex justify-start">
-              <div className="relative rounded-2xl bg-muted text-foreground max-w-xs px-4 py-2 mb-2 shadow-sm">
-                <div className="animate-pulse h-4 w-24 bg-muted-foreground/30 rounded" />
-                <span className="absolute right-3 bottom-1 text-xs text-muted-foreground pointer-events-none bg-transparent">
-                  ...
-                </span>
-              </div>
-            </div>
-          )}
-          <div ref={bottomRef} />
+            )}
+            <div ref={bottomRef} />
+          </div>
         </div>
       </div>
       <form
