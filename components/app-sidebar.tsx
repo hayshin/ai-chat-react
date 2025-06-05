@@ -41,14 +41,16 @@ export function AppSidebar({ chats, onChatClick, selectedUsername }: AppSidebarP
         )}
       </SidebarContent>
       <SidebarFooter>
-        <button
-          className="fixed bottom-6 right-6 z-50 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:bg-primary/90 transition-colors"
-          onClick={() => setShowNewChat((v) => !v)}
-          aria-label={showNewChat ? "Close new chat" : "New chat"}
-          type="button"
-        >
-          {showNewChat ? <X className="w-5 h-5" /> : <Pencil className="w-5 h-5" />}
-        </button>
+        <div className="relative w-full h-16">
+          <button
+            className="absolute bottom-4 right-4 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:bg-primary/90 transition-colors"
+            onClick={() => setShowNewChat((v) => !v)}
+            aria-label={showNewChat ? "Close new chat" : "New chat"}
+            type="button"
+          >
+            {showNewChat ? <X className="w-5 h-5" /> : <Pencil className="w-5 h-5" />}
+          </button>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
