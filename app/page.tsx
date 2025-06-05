@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatLayout } from "@/components/chat-layout";
 import { useChatStore } from "@/store/useChatStore";
@@ -30,7 +30,7 @@ export default function Home() {
             style={{
                 "--sidebar-width": "20rem",
                 "--sidebar-width-mobile": "20rem",
-            }}
+            } as React.CSSProperties}
         >
             <AppSidebar
                 chats={chats}

@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { createResponse } from "@/lib/openai";
+import { themeClasses } from "@/lib/theme";
 
 export interface ChatLayoutProps {
   chat: Chat;
@@ -59,7 +60,6 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
         };
         setMessages((prev) => [...prev, aiMessage]);
         onSendMessage?.(aiMessageText, chat.username);
-
       } catch (e) {
         setMessages((prev) => [
           ...prev,
@@ -84,43 +84,43 @@ export function ChatLayout({ chat, mainUser, onSendMessage }: ChatLayoutProps) {
 
   return (
     <div className="flex flex-col gap-2 w-full h-full">
-      <div className="flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 flex flex-col p-2 overflow-y-auto">
-          <div className="flex flex-col justify-end flex-1 gap-2">
-            {messages.map((msg, idx) => {
-              const isMainUser = msg.username === mainUser;
-              return (
-                <div
-                  key={idx}
-                  className={`flex w-full ${isMainUser ? "justify-end" : "justify-start"}`}
-                >
-                  <div className="relative rounded-2xl min-w-[70%] max-w-[90%]">
-                    <Message
-                      username=""
-                      message={msg.message}
-                      time={msg.time}
-                      bgColor={isMainUser ? "bg-purple-300" : "bg-muted text-foreground"}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="relative rounded-2xl bg-muted text-foreground max-w-xs px-4 py-2 mb-2 shadow-sm">
-                  <div className="animate-pulse h-4 w-24 bg-muted-foreground/30 rounded" />
-                  <span className="absolute right-3 bottom-1 text-xs text-muted-foreground pointer-events-none bg-transparent">
-                    ...
-                  </span>
-                </div>
+      <div className="flex-1 min-h-0 flex flex-col p-2 overflow-y-auto">
+        <div className="flex flex-col justify-end flex-1 gap-2">
+          {messages.map((msg, idx) => {
+            const isMainUser = msg.username === mainUser;
+            return (
+              <div
+                key={idx}
+                className={`flex w-full ${isMainUser ? "justify-end" : "justify-start"}`}
+              >
+                {/* <div className={`relative min-w-[70%] max-w-[90%] ${
+                  isMainUser ? themeClasses.messageOut : themeClasses.messageIn
+                }`}> */}
+                  <Message
+                    username=""
+                    message={msg.message}
+                    time={msg.time}
+                    theme={isMainUser ? themeClasses.messageOut : themeClasses.messageIn}
+                  />
+                {/* </div> */}
               </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
+            );
+          })}
+          {loading && (
+            <div className="flex justify-start">
+              <div className={`relative max-w-xs px-4 py-2 mb-2 shadow-sm ${themeClasses.messageIn}`}>
+                <div className="animate-pulse h-4 w-24 bg-gray-300 rounded" />
+                <span className="absolute right-3 bottom-1 text-xs text-gray-500 pointer-events-none bg-transparent">
+                  ...
+                </span>
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
         </div>
       </div>
       <form
-        className="flex items-end gap-2 pt-2 border-t bg-background"
+        className={`flex items-end gap-2 pt-2 ${themeClasses.inputArea}`}
         onSubmit={e => {
           e.preventDefault();
           handleSend();

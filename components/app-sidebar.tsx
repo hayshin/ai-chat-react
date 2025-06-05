@@ -10,6 +10,7 @@ import { Chat } from "@/lib/types";
 import { useState } from "react";
 import { Pencil, X, Search, Filter } from "lucide-react";
 import { NewChatModal } from "./new-chat-modal";
+import { themeClasses } from "@/lib/theme";
 
 interface AppSidebarProps {
   chats: Chat[];
@@ -39,8 +40,8 @@ export function AppSidebar({ chats, onChatClick, selectedUsername }: AppSidebarP
   });
 
   return (
-    <Sidebar>
-      <SidebarHeader />
+    <Sidebar className={themeClasses.sidebar}>
+      <SidebarHeader className={themeClasses.chatHeader} />
       <div className="flex items-center gap-2 px-4 py-2 border-b bg-background">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
